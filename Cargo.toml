@@ -20,11 +20,17 @@ today = ["chrono"]
 test_lib = []
 
 [dependencies]
+anyhow = "1.0.93"
 
 # Template dependencies
 chrono = { version = "0.4.38", optional = true }
 dhat = { version = "0.3.3", optional = true }
+hashbrown = "0.15.2"
+lazy_static = "1.5.0"
+nom = "7.1.3"
 pico-args = "0.5.0"
+rayon = "1.10.0"
+regex = "1.11.1"
 tinyjson = "2.5.1"
 
 # Solution dependencies
