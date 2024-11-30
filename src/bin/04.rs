@@ -84,6 +84,7 @@ pub fn part_two(input: &str) -> Option<u32> {
                 if top_five.eq(checksum) {
                     let result = shift_letters(letters, id);
                     if result.contains("northpole") {
+                        println!("{letters}-{id}[{checksum}]");
                         return Some(id);
                     }
                 }
@@ -118,12 +119,12 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, Some(1514));
+        assert_eq!(result, Some(1838));
     }
 
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(324));
     }
 }
