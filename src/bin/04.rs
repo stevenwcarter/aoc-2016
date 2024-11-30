@@ -5,6 +5,15 @@ use hashbrown::HashMap;
 use lazy_static::lazy_static;
 use regex::Regex;
 
+use nom::{
+    bytes::complete::tag,
+    character::complete::{alpha1, digit1},
+    combinator::map_res,
+    multi::separated_list1,
+    sequence::{delimited, preceded, tuple},
+    IResult,
+};
+
 lazy_static! {
     static ref RE: Regex = Regex::new(r"^([a-z-]+)-(\d+)\[([a-z]+)\]$").unwrap();
 }
@@ -21,6 +30,16 @@ fn parse_data(input: &str) -> Option<(String, u32, &str, &str)> {
         None
     }
 }
+fn parse_data_nom(input: &str) -> IResult<&str, (String, u32, &str)> {
+    let (input, (parts, id, checksum)) = tuple((
+        separated_list1(tag("-"), alpha1),
+        preceded(tag("-"), map_res(digit1, str::parse)),
+        delimited(tag("["), alpha1, tag("]")),
+    ))(input)?;
+
+    Ok((input, (parts.join("-"), id, checksum)))
+}
+
 fn top_five_letters(text: &str) -> String {
     let mut letter_counts = HashMap::with_capacity(30);
 
@@ -58,8 +77,16 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(
         lines
             .par_iter()
-            .filter_map(|l| parse_data(l))
-            .filter_map(|(chars, id, checksum, _)| {
+            .filter_map(|l| match parse_data_nom(l) {
+                Ok((_, (letters, id, checksum))) => Some((letters, id, checksum)),
+                Err(e) => {
+                    println!("Error: {:?}", e);
+
+                    None
+                }
+            })
+            .filter_map(|(letters, id, checksum)| {
+                let chars = letters.replace("-", "");
                 let top_five = top_five_letters(&chars);
 
                 if top_five.eq(checksum) {
@@ -74,24 +101,29 @@ pub fn part_one(input: &str) -> Option<u32> {
 pub fn part_two(input: &str) -> Option<u32> {
     let lines: Vec<&str> = input.lines().collect();
 
-    Some(
-        lines
-            .par_iter()
-            .filter_map(|l| parse_data(l))
-            .filter_map(|(chars, id, checksum, letters)| {
-                let top_five = top_five_letters(&chars);
+    lines
+        .par_iter()
+        .filter_map(|l| match parse_data_nom(l) {
+            Ok((_, (letters, id, checksum))) => Some((letters, id, checksum)),
+            Err(e) => {
+                println!("Error: {:?}", e);
 
-                if top_five.eq(checksum) {
-                    let result = shift_letters(letters, id);
-                    if result.contains("northpole") {
-                        println!("{letters}-{id}[{checksum}]");
-                        return Some(id);
-                    }
-                }
                 None
-            })
-            .sum(),
-    )
+            }
+        })
+        .filter_map(|(letters, id, checksum)| {
+            let chars = letters.replace("-", "");
+            let top_five = top_five_letters(&chars);
+
+            if top_five.eq(checksum) {
+                let result = shift_letters(&letters, id);
+                if result.contains("northpole") {
+                    return Some(id);
+                }
+            }
+            None
+        })
+        .find_any(|_| true)
 }
 
 #[cfg(test)]
