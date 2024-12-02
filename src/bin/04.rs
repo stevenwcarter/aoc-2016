@@ -2,42 +2,24 @@ use rayon::prelude::*;
 advent_of_code::solution!(4);
 
 use hashbrown::HashMap;
-use lazy_static::lazy_static;
 use regex::Regex;
 
 use nom::{
-    bytes::complete::tag,
+    bytes::complete::{tag, take_until},
     character::complete::{alpha1, digit1},
     combinator::map_res,
-    multi::separated_list1,
-    sequence::{delimited, preceded, tuple},
+    sequence::{delimited, preceded, terminated, tuple},
     IResult,
 };
 
-lazy_static! {
-    static ref RE: Regex = Regex::new(r"^([a-z-]+)-(\d+)\[([a-z]+)\]$").unwrap();
-}
-
-fn parse_data(input: &str) -> Option<(String, u32, &str, &str)> {
-    if let Some(captures) = RE.captures(input) {
-        let letters = captures.get(1)?.as_str();
-        let replaced = letters.replace("-", "");
-        let id = captures.get(2)?.as_str().parse::<u32>().unwrap();
-        let checksum = captures.get(3)?.as_str();
-
-        Some((replaced, id, checksum, letters))
-    } else {
-        None
-    }
-}
-fn parse_data_nom(input: &str) -> IResult<&str, (String, u32, &str)> {
+fn parse_data_nom(input: &str) -> IResult<&str, (&str, u32, &str)> {
     let (input, (parts, id, checksum)) = tuple((
-        separated_list1(tag("-"), alpha1),
+        terminated(take_until("-"), tag("-")),
         preceded(tag("-"), map_res(digit1, str::parse)),
         delimited(tag("["), alpha1, tag("]")),
     ))(input)?;
 
-    Ok((input, (parts.join("-"), id, checksum)))
+    Ok((input, (parts, id, checksum)))
 }
 
 fn top_five_letters(text: &str) -> String {
@@ -132,11 +114,11 @@ mod tests {
 
     #[test]
     fn parse_data_1() {
-        let result = parse_data("aaaaa-bbb-z-y-x-123[abxyz]");
+        let result = parse_data_nom("aaaaa-bbb-z-y-x-123[abxyz]");
 
-        assert!(result.is_some());
-        let result = result.unwrap();
-        assert_eq!(result.0, "aaaaabbbzyx".to_string());
+        assert!(result.is_ok());
+        let result = result.unwrap().1;
+        assert_eq!(result.0, "aaaaa-bbb-z-y-x");
         assert_eq!(result.1, 123);
         assert_eq!(result.2, "abxyz");
     }
