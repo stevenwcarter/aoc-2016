@@ -2,6 +2,7 @@ use rayon::prelude::*;
 advent_of_code::solution!(4);
 
 use hashbrown::HashMap;
+use lazy_static::lazy_static;
 use regex::Regex;
 
 use nom::{
@@ -11,6 +12,10 @@ use nom::{
     sequence::{delimited, preceded, terminated, tuple},
     IResult,
 };
+
+lazy_static! {
+    static ref RE: Regex = Regex::new(r"^([a-z-]+)-(\d+)\[([a-z]+)\]$").unwrap();
+}
 
 fn parse_data_nom(input: &str) -> IResult<&str, (&str, u32, &str)> {
     let (input, (parts, id, checksum)) = tuple((
