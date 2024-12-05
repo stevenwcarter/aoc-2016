@@ -1,6 +1,21 @@
 use hashbrown::HashMap;
+use md5::Digest;
 
 advent_of_code::solution!(5);
+
+fn starts_with_zeroes(bytes: &Digest) -> Option<(char, char)> {
+    if bytes[0] != 0 || bytes[1] != 0 {
+        return None;
+    }
+
+    let result = format!("{:x}", bytes);
+    let mut chars = result.chars();
+    if chars.nth(4) == Some('0') {
+        return Some((chars.next().unwrap(), chars.next().unwrap()));
+    }
+
+    None
+}
 
 pub fn part_one(input: &str) -> Option<String> {
     let input = input.trim();
@@ -11,11 +26,8 @@ pub fn part_one(input: &str) -> Option<String> {
     while interesting.len() < 8 {
         let check = format!("{input}{pos}");
         let hash = md5::compute(&check);
-        if hash.0.first().unwrap() == &0 && hash.0.get(1).unwrap() == &0 {
-            let result = format!("{:x}", hash);
-            if result.starts_with("00000") {
-                interesting.push(result.chars().nth(5).unwrap());
-            }
+        if let Some((digit, _)) = starts_with_zeroes(&hash) {
+            interesting.push(digit);
         }
         pos += 1;
     }
@@ -33,17 +45,13 @@ pub fn part_two(input: &str) -> Option<String> {
     while solved.len() < 8 {
         let check = format!("{input}{pos}");
         let hash = md5::compute(&check);
-        if hash.0.first().unwrap() == &0 && hash.0.get(1).unwrap() == &0 {
-            let result = format!("{:x}", hash);
-            if result.starts_with("00000") {
-                let digit_to_check = result
-                    .chars()
-                    .nth(5)
-                    .unwrap()
-                    .to_string()
-                    .parse::<u8>()
-                    .unwrap_or(9);
-                let char_value = result.chars().nth(6).unwrap();
+        let check = format!("{:x}", hash);
+        if check.starts_with("00000") {
+            println!("{check} - {pos}");
+        }
+        if let Some((digit_to_check, char_value)) = starts_with_zeroes(&hash) {
+            if let Some(digit_to_check) = digit_to_check.to_digit(10) {
+                let digit_to_check = digit_to_check as u8;
                 if digit_to_check < 8 && !solved.get(&digit_to_check).unwrap_or(&false) {
                     let position = interesting.get_mut(digit_to_check as usize).unwrap();
                     solved.entry(digit_to_check).or_insert(true);
@@ -51,6 +59,25 @@ pub fn part_two(input: &str) -> Option<String> {
                 }
             }
         }
+        // let byte1 = hash.0.first().unwrap();
+        // if byte1 == &0 && hash.0.get(1).unwrap() == &0 {
+        //     let result = format!("{:x}", hash);
+        //     if result.starts_with("00000") {
+        //         let digit_to_check = result
+        //             .chars()
+        //             .nth(5)
+        //             .unwrap()
+        //             .to_string()
+        //             .parse::<u8>()
+        //             .unwrap_or(9);
+        //         let char_value = result.chars().nth(6).unwrap();
+        //         if digit_to_check < 8 && !solved.get(&digit_to_check).unwrap_or(&false) {
+        //             let position = interesting.get_mut(digit_to_check as usize).unwrap();
+        //             solved.entry(digit_to_check).or_insert(true);
+        //             *position = char_value;
+        //         }
+        //     }
+        // }
         pos += 1;
     }
 

@@ -2,29 +2,25 @@ use rayon::prelude::*;
 advent_of_code::solution!(4);
 
 use hashbrown::HashMap;
-use lazy_static::lazy_static;
-use regex::Regex;
 
 use nom::{
-    bytes::complete::{tag, take_until},
-    character::complete::{alpha1, digit1},
+    bytes::complete::{is_not, tag, take_while},
+    character::complete::digit1,
     combinator::map_res,
-    sequence::{delimited, preceded, terminated, tuple},
+    sequence::delimited,
     IResult,
 };
 
-lazy_static! {
-    static ref RE: Regex = Regex::new(r"^([a-z-]+)-(\d+)\[([a-z]+)\]$").unwrap();
+fn parse_u32(input: &str) -> Result<u32, std::num::ParseIntError> {
+    input.parse::<u32>()
 }
 
 fn parse_data_nom(input: &str) -> IResult<&str, (&str, u32, &str)> {
-    let (input, (parts, id, checksum)) = tuple((
-        terminated(take_until("-"), tag("-")),
-        preceded(tag("-"), map_res(digit1, str::parse)),
-        delimited(tag("["), alpha1, tag("]")),
-    ))(input)?;
+    let (input, part1) = take_while(|c: char| !c.is_ascii_digit() || c == '-')(input)?;
+    let (input, number) = map_res(digit1, parse_u32)(input)?;
+    let (input, part2) = delimited(tag("["), is_not("]"), tag("]"))(input)?;
 
-    Ok((input, (parts, id, checksum)))
+    Ok((input, (&part1[..part1.len() - 1], number, part2)))
 }
 
 fn top_five_letters(text: &str) -> String {
@@ -103,7 +99,7 @@ pub fn part_two(input: &str) -> Option<u32> {
             let top_five = top_five_letters(&chars);
 
             if top_five.eq(checksum) {
-                let result = shift_letters(&letters, id);
+                let result = shift_letters(letters, id);
                 if result.contains("northpole") {
                     return Some(id);
                 }
