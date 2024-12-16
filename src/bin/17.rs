@@ -10,11 +10,12 @@ fn is_open(c: char) -> bool {
 
 fn get_doors(passcode: &str, path: &str) -> [bool; 4] {
     let hash = format!("{:x}", md5::compute(format!("{}{}", passcode, path)));
+    let mut hash_iter = hash.chars();
     [
-        is_open(hash.chars().nth(0).unwrap()), // Up
-        is_open(hash.chars().nth(1).unwrap()), // Down
-        is_open(hash.chars().nth(2).unwrap()), // Left
-        is_open(hash.chars().nth(3).unwrap()), // Right
+        is_open(hash_iter.next().unwrap()),
+        is_open(hash_iter.next().unwrap()),
+        is_open(hash_iter.next().unwrap()),
+        is_open(hash_iter.next().unwrap()),
     ]
 }
 
