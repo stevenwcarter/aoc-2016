@@ -2,13 +2,17 @@
 name = "advent_of_code"
 version = "0.11.0"
 authors = ["Felix Spöttel <1682504+fspoettel@users.noreply.github.com>"]
-edition = "2021"
+edition = "2024"
 default-run = "advent_of_code"
 publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 doctest = false
+
+[profile.dev]
+opt-level = 0
+debug = true
 
 [profile.dhat]
 inherits = "release"
@@ -36,5 +40,6 @@ pico-args = "0.5.0"
 rayon = "1.10.0"
 regex = "1.11.1"
 tinyjson = "2.5.1"
+aoc-mine = { git = "https://github.com/stevenwcarter/aoc-mine.git" }
 
 # Solution dependencies

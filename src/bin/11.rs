@@ -22,7 +22,13 @@ impl PartialEq for State {
         let normalize = |items: &[(usize, usize)]| -> Vec<(usize, usize)> {
             let mut normalized: Vec<(usize, usize)> = items
                 .iter()
-                .map(|&(gen, chip)| if gen < chip { (gen, chip) } else { (chip, gen) })
+                .map(|&(genn, chip)| {
+                    if genn < chip {
+                        (genn, chip)
+                    } else {
+                        (chip, genn)
+                    }
+                })
                 .collect();
             normalized.sort_unstable();
             normalized
@@ -43,7 +49,13 @@ impl Hash for State {
         let mut normalized: Vec<(usize, usize)> = self
             .items
             .iter()
-            .map(|&(gen, chip)| if gen < chip { (gen, chip) } else { (chip, gen) })
+            .map(|&(genn, chip)| {
+                if genn < chip {
+                    (genn, chip)
+                } else {
+                    (chip, genn)
+                }
+            })
             .collect();
         normalized.sort_unstable();
         normalized.hash(state);
@@ -53,7 +65,9 @@ impl Hash for State {
 impl State {
     // Check if this state is a goal state
     fn is_goal(&self) -> bool {
-        self.items.iter().all(|&(gen, chip)| gen == 3 && chip == 3)
+        self.items
+            .iter()
+            .all(|&(genn, chip)| genn == 3 && chip == 3)
     }
 
     fn next_states(&self) -> Vec<State> {
@@ -72,7 +86,7 @@ impl State {
             .items
             .iter()
             .enumerate()
-            .filter(|&(_, &(gen, _))| gen == current_floor)
+            .filter(|&(_, &(genn, _))| genn == current_floor)
             .map(|(idx, _)| idx)
             .collect();
 
