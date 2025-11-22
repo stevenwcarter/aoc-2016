@@ -63,8 +63,8 @@ impl State {
     pub fn run(&mut self) {
         let mut is_complete = false;
         while !is_complete {
-            self.log(format!("{} {} {} {}", self.a, self.b, self.c, self.d));
-            self.log(format!("{:?}", self.instructions.get(self.pos as usize)));
+            // self.log(format!("{} {} {} {}", self.a, self.b, self.c, self.d));
+            // self.log(format!("{:?}", self.instructions.get(self.pos as usize)));
             match self.instructions.get(self.pos as usize) {
                 Some(Instruction::Cpy((v, d))) => {
                     let value = match v.as_str() {
@@ -150,7 +150,7 @@ impl State {
                     is_complete = true;
                 }
             }
-            self.log(format!("{} {} {} {}\n", self.a, self.b, self.c, self.d));
+            // self.log(format!("{} {} {} {}\n", self.a, self.b, self.c, self.d));
         }
     }
 }

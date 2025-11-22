@@ -1,9 +1,11 @@
 use cached::proc_macro::cached;
+use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 
 advent_of_code::solution!(14);
 
-fn hasher(input: &str, is_part_2: bool) -> String {
-    let mut hash = format!("{:x}", md5::compute(input));
+#[cached(size = 50000)]
+fn hasher(input: String, is_part_2: bool) -> String {
+    let mut hash = format!("{:x}", md5::compute(&input));
 
     if is_part_2 {
         (0..2016).for_each(|_| hash = format!("{:x}", md5::compute(&hash)));
@@ -40,17 +42,18 @@ fn has_n_consecutive_chars(s: &str, n: u8, letter: Option<char>) -> Option<char>
     None
 }
 
-fn five_in_next_thousand(input: &str, pos: usize, letter: Option<char>, is_part_2: bool) -> bool {
-    (pos + 1..pos + 1001).any(|pos| {
+#[cached(size = 25000)]
+fn five_in_next_thousand(input: String, pos: usize, letter: Option<char>, is_part_2: bool) -> bool {
+    (pos + 1..pos + 1001).par_bridge().any(|pos| {
         let hash = get_hash(input.to_owned(), pos, is_part_2);
         has_n_consecutive_chars(&hash, 5, letter).is_some()
     })
 }
 
-#[cached(size = 1000)]
+#[cached(size = 10000)]
 fn get_hash(prefix: String, pos: usize, is_part_2: bool) -> String {
     let hash = format!("{prefix}{pos}");
-    hasher(&hash, is_part_2)
+    hasher(hash, is_part_2)
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
@@ -62,7 +65,7 @@ pub fn part_one(input: &str) -> Option<usize> {
         while !found {
             let hash = get_hash(input.to_owned(), pos, false);
             if let Some(letter) = has_n_consecutive_chars(&hash, 3, None)
-                && five_in_next_thousand(input, pos, Some(letter), false)
+                && five_in_next_thousand(input.to_owned(), pos, Some(letter), false)
             {
                 inputs.push(pos);
                 found = true;
@@ -83,7 +86,7 @@ pub fn part_two(input: &str) -> Option<usize> {
         while !found {
             let hash = get_hash(input.to_string(), pos, true);
             if let Some(letter) = has_n_consecutive_chars(&hash, 3, None)
-                && five_in_next_thousand(input, pos, Some(letter), true)
+                && five_in_next_thousand(input.to_owned(), pos, Some(letter), true)
             {
                 inputs.push(pos);
                 println!("{} {pos} {hash}", inputs.len());
@@ -110,7 +113,7 @@ mod tests {
             "{}0",
             &advent_of_code::template::read_file("examples", DAY).trim()
         );
-        let hash = hasher(&input, true);
+        let hash = hasher(input, true);
         assert_eq!(hash, "a107ff634856bb300138cac6568c0f24");
     }
 
