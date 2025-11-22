@@ -57,25 +57,29 @@ fn dfs(passcode: &str, x: usize, y: usize, path: &str) -> Option<String> {
     let doors = get_doors(passcode, path);
     let mut longest_path = None;
 
-    if doors[0] && y > 0 {
-        if let Some(new_path) = dfs(passcode, x, y - 1, &format!("{}U", path)) {
-            longest_path = max_path(longest_path, new_path);
-        }
+    if doors[0]
+        && y > 0
+        && let Some(new_path) = dfs(passcode, x, y - 1, &format!("{}U", path))
+    {
+        longest_path = max_path(longest_path, new_path);
     }
-    if doors[1] && y < 3 {
-        if let Some(new_path) = dfs(passcode, x, y + 1, &format!("{}D", path)) {
-            longest_path = max_path(longest_path, new_path);
-        }
+    if doors[1]
+        && y < 3
+        && let Some(new_path) = dfs(passcode, x, y + 1, &format!("{}D", path))
+    {
+        longest_path = max_path(longest_path, new_path);
     }
-    if doors[2] && x > 0 {
-        if let Some(new_path) = dfs(passcode, x - 1, y, &format!("{}L", path)) {
-            longest_path = max_path(longest_path, new_path);
-        }
+    if doors[2]
+        && x > 0
+        && let Some(new_path) = dfs(passcode, x - 1, y, &format!("{}L", path))
+    {
+        longest_path = max_path(longest_path, new_path);
     }
-    if doors[3] && x < 3 {
-        if let Some(new_path) = dfs(passcode, x + 1, y, &format!("{}R", path)) {
-            longest_path = max_path(longest_path, new_path);
-        }
+    if doors[3]
+        && x < 3
+        && let Some(new_path) = dfs(passcode, x + 1, y, &format!("{}R", path))
+    {
+        longest_path = max_path(longest_path, new_path);
     }
 
     longest_path

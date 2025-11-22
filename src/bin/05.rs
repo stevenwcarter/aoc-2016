@@ -49,14 +49,14 @@ pub fn part_two(input: &str) -> Option<String> {
         if check.starts_with("00000") {
             println!("{check} - {pos}");
         }
-        if let Some((digit_to_check, char_value)) = starts_with_zeroes(&hash) {
-            if let Some(digit_to_check) = digit_to_check.to_digit(10) {
-                let digit_to_check = digit_to_check as u8;
-                if digit_to_check < 8 && !solved.get(&digit_to_check).unwrap_or(&false) {
-                    let position = interesting.get_mut(digit_to_check as usize).unwrap();
-                    solved.entry(digit_to_check).or_insert(true);
-                    *position = char_value;
-                }
+        if let Some((digit_to_check, char_value)) = starts_with_zeroes(&hash)
+            && let Some(digit_to_check) = digit_to_check.to_digit(10)
+        {
+            let digit_to_check = digit_to_check as u8;
+            if digit_to_check < 8 && !solved.get(&digit_to_check).unwrap_or(&false) {
+                let position = interesting.get_mut(digit_to_check as usize).unwrap();
+                solved.entry(digit_to_check).or_insert(true);
+                *position = char_value;
             }
         }
         // let byte1 = hash.0.first().unwrap();

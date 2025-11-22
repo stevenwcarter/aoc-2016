@@ -3,11 +3,10 @@ advent_of_code::solution!(15);
 use rayon::prelude::*;
 
 use nom::{
-    bytes::complete::tag,
-    character::complete::{digit1, space1},
-    combinator::{map_res, recognize},
-    sequence::preceded,
     IResult,
+    bytes::complete::tag,
+    character::complete::digit1,
+    combinator::{map_res, recognize},
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -52,7 +51,7 @@ fn test_disks(start_position: u32, disks: &[Disk]) -> bool {
     let mut position = start_position + 1;
 
     for disk in disks {
-        if (disk.zero_position + position) % disk.position_count != 0 {
+        if !(disk.zero_position + position).is_multiple_of(disk.position_count) {
             return false;
         }
         position += 1;

@@ -1,7 +1,5 @@
 advent_of_code::solution!(16);
 
-use rayon::prelude::*;
-
 // - Call the data you have at this point "a".
 // - Make a copy of "a"; call this copy "b".
 // - Reverse the order of the characters in "b".
@@ -33,7 +31,7 @@ pub fn add_random(length_needed: usize, a: &str) -> String {
 }
 
 pub fn checksum_step(input: &str, first: bool) -> String {
-    if first || input.len() % 2 == 0 {
+    if first || input.len().is_multiple_of(2) {
         let input = input
             .chars()
             .collect::<Vec<char>>()

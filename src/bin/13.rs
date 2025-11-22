@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, u32};
+use std::collections::VecDeque;
 
 use advent_of_code::Point;
 use hashbrown::HashSet;
@@ -16,7 +16,7 @@ impl IsWall for Point {
 
         let result = x.pow(2) + 3 * x + 2 * x * y + y + y * y + fave_number;
 
-        result.count_ones() % 2 != 0
+        !result.count_ones().is_multiple_of(2)
     }
 }
 

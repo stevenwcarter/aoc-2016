@@ -3,12 +3,12 @@ advent_of_code::solution!(22);
 use advent_of_code::Point;
 use hashbrown::HashMap;
 use nom::{
+    IResult,
     bytes::complete::{tag, take_until},
     character::complete::{digit1, newline, space1},
     combinator::map_res,
     multi::many1,
     sequence::terminated,
-    IResult,
 };
 use std::str::FromStr;
 
@@ -87,7 +87,6 @@ pub fn part_one(input: &str) -> Option<u32> {
                 });
         });
 
-    let other = found_other.unwrap();
     Some(count)
 }
 

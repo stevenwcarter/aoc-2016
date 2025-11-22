@@ -1,4 +1,4 @@
-use advent_of_code::assembunny::{parse_line, Instruction, State};
+use advent_of_code::assembunny::{Instruction, State, parse_line};
 
 advent_of_code::solution!(23);
 
@@ -11,11 +11,7 @@ pub fn part_one(input: &str) -> Option<i32> {
     Some(state.a)
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
-    // let instructions: Vec<Instruction> = input.lines().map(parse_line).collect();
-    // let mut state = State::new(instructions);
-    // state.a = 12;
-    // state.run();
+pub fn part_two(_input: &str) -> Option<u64> {
     let factorial: u64 = (1..=12).product();
 
     Some(factorial + 71 * 72)

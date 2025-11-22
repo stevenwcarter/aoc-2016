@@ -1,5 +1,3 @@
-use hashbrown::HashMap;
-
 advent_of_code::solution!(19);
 
 use std::collections::VecDeque;
@@ -52,11 +50,7 @@ fn find_winner_part2(num_people: u32) -> u32 {
         left.push_back(right.pop_back().unwrap());
     }
 
-    if !left.is_empty() {
-        left[0]
-    } else {
-        right[0]
-    }
+    if !left.is_empty() { left[0] } else { right[0] }
 }
 
 pub fn part_one(input: &str) -> Option<u32> {

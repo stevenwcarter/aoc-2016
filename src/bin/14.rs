@@ -22,10 +22,10 @@ fn has_n_consecutive_chars(s: &str, n: u8, letter: Option<char>) -> Option<char>
 
     for c in s.chars() {
         if Some(c) == prev {
-            if let Some(oc) = letter {
-                if c != oc {
-                    continue;
-                }
+            if let Some(oc) = letter
+                && c != oc
+            {
+                continue;
             }
             count += 1;
             if count >= n {
@@ -61,11 +61,11 @@ pub fn part_one(input: &str) -> Option<usize> {
         let mut found = false;
         while !found {
             let hash = get_hash(input.to_owned(), pos, false);
-            if let Some(letter) = has_n_consecutive_chars(&hash, 3, None) {
-                if five_in_next_thousand(input, pos, Some(letter), false) {
-                    inputs.push(pos);
-                    found = true;
-                }
+            if let Some(letter) = has_n_consecutive_chars(&hash, 3, None)
+                && five_in_next_thousand(input, pos, Some(letter), false)
+            {
+                inputs.push(pos);
+                found = true;
             }
             pos += 1;
         }
@@ -82,12 +82,12 @@ pub fn part_two(input: &str) -> Option<usize> {
         let mut found = false;
         while !found {
             let hash = get_hash(input.to_string(), pos, true);
-            if let Some(letter) = has_n_consecutive_chars(&hash, 3, None) {
-                if five_in_next_thousand(input, pos, Some(letter), true) {
-                    inputs.push(pos);
-                    println!("{} {pos} {hash}", inputs.len());
-                    found = true;
-                }
+            if let Some(letter) = has_n_consecutive_chars(&hash, 3, None)
+                && five_in_next_thousand(input, pos, Some(letter), true)
+            {
+                inputs.push(pos);
+                println!("{} {pos} {hash}", inputs.len());
+                found = true;
             }
             pos += 1;
         }
