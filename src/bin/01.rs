@@ -72,18 +72,23 @@ pub fn part_two(input: &str) -> Option<u32> {
                 let count: u32 = count.parse().expect("could not parse {count}");
 
                 current_direction = Direction::new_direction(direction, current_direction);
-                (0..count).for_each(|_| match current_direction {
-                    North => coord.move_up(),
-                    East => coord.move_right(),
-                    South => coord.move_down(),
-                    West => coord.move_left(),
-                });
+                (0..count).for_each(|_| {
+                    if found {
+                        return;
+                    }
+                    match current_direction {
+                        North => coord.move_up(),
+                        East => coord.move_right(),
+                        South => coord.move_down(),
+                        West => coord.move_left(),
+                    }
 
-                if visited.contains(&coord) {
-                    found = true;
-                } else {
-                    visited.push(coord);
-                }
+                    if visited.contains(&coord) {
+                        found = true;
+                    } else {
+                        visited.push(coord);
+                    }
+                });
             }
         });
 
