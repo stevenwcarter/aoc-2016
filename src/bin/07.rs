@@ -1,11 +1,13 @@
 advent_of_code::solution!(7);
 
+use std::str::from_utf8;
+
 use nom::{
-    branch::alt,
-    bytes::complete::{is_not, tag, take},
-    combinator::{map, verify},
-    sequence::{delimited, tuple},
     IResult,
+    branch::alt,
+    bytes::complete::{is_not, tag},
+    combinator::map,
+    sequence::delimited,
 };
 
 fn outside_brackets(input: &str) -> IResult<&str, &str> {
@@ -46,81 +48,34 @@ fn parse_sections(input: &str) -> IResult<&str, (Vec<&str>, Vec<&str>)> {
     Ok((remaining, (outside, inside)))
 }
 
-fn abba_pattern(input: &str) -> IResult<&str, &str> {
-    verify(
-        tuple((
-            take(1usize), // First character
-            take(1usize), // Second character
-            take(1usize), // Third character
-            take(1usize), // Fourth character
-        )),
-        |(a, b, c, d)| a == d && b == c && a != b, // Ensure the "abba" pattern
-    )(input)
-    .map(|(remaining, _)| (remaining, input)) // Return input for traversal
+#[inline(always)]
+fn abba_check(input: &&&str) -> bool {
+    input
+        .as_bytes()
+        .array_windows()
+        .any(|[a1, b1, b2, a2]| (a1 != b1) && (a1 == a2) && (b1 == b2))
 }
 
-/// Parser to check if any "abba" pattern exists in the input
-fn contains_abba(input: &str) -> bool {
-    // Slide through the string looking for the pattern
-    let mut slice = input;
-
-    while slice.len() >= 4 {
-        if let Ok((_, _)) = abba_pattern(slice) {
-            return true;
-        }
-        slice = &slice[1..]; // Move forward by one character
-    }
-
-    false
-}
-
-fn has_abba(matches: &[&str]) -> bool {
-    matches.iter().filter(|m| contains_abba(m)).count() > 0
-}
-
-fn aba_pattern(input: &str) -> IResult<&str, &str> {
-    verify(
-        tuple((
-            take(1usize), // First character
-            take(1usize), // Second character
-            take(1usize), // Third character
-        )),
-        |(a, b, c)| a == c && a != b, // Check the "aba" condition
-    )(input)
-    .map(|(remaining, (_, _, _))| (remaining, &input[0..3])) // Return the matched pattern
-}
-
-fn collect_aba_patterns(input: &str) -> Vec<&str> {
-    let mut slice = input;
-    let mut matches = Vec::new();
-
-    while slice.len() >= 3 {
-        if let Ok((_, matched)) = aba_pattern(slice) {
-            matches.push(matched);
-            slice = &slice[1..]; // Move the window by one character
-        } else {
-            slice = &slice[1..]; // Move the window by one character
-        }
-    }
-
-    matches
-}
-
-pub fn get_abas<'a>(matches: &'a [&str]) -> Vec<&'a str> {
-    matches
-        .iter()
-        .flat_map(|m| collect_aba_patterns(m))
+#[inline(always)]
+fn aba_check(input: &str) -> Vec<&[u8; 3]> {
+    input
+        .as_bytes()
+        .array_windows()
+        .filter(|[a1, b, a2]| (a1 != b) && (a1 == a2))
         .collect()
 }
 
-fn transform_to_bab(input: &str) -> String {
-    let mut chars: Vec<char> = input.chars().collect();
-    if chars.len() == 3 {
-        chars[2] = chars[1];
-        chars[1] = chars[0];
-        chars[0] = chars[2];
-    }
-    chars.into_iter().collect() // Convert back to a String
+fn has_abba(matches: &[&str]) -> bool {
+    matches.iter().filter(abba_check).count() > 0
+}
+
+pub fn get_abas<'a>(matches: &'a [&str]) -> Vec<&'a [u8; 3]> {
+    matches.iter().flat_map(|m| aba_check(m)).collect()
+}
+
+fn transform_to_bab(input: &[u8; 3]) -> String {
+    let remapped = [input[1], input[0], input[1]];
+    from_utf8(&remapped).unwrap().to_owned()
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
@@ -146,7 +101,10 @@ pub fn part_two(input: &str) -> Option<u32> {
             .filter(|l| {
                 let (_, (outside, inside)) = parse_sections(l).unwrap();
                 let outside = get_abas(&outside);
-                let inside = get_abas(&inside);
+                let inside: Vec<&str> = get_abas(&inside)
+                    .iter()
+                    .map(|&a| from_utf8(a).unwrap())
+                    .collect();
 
                 outside
                     .iter()
