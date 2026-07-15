@@ -1,100 +1,49 @@
 advent_of_code::solution!(18);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Tile {
-    Trap,
-    Safe,
+/// Parse the puzzle input into the first row's trap bitmask (bit `i` set means
+/// column `i` is a trap), the row width, and the number of rows requested by the
+/// input. `^` sets a bit, `.` leaves it clear.
+fn parse(input: &str) -> (u128, usize, usize) {
+    let (row, needed) = input.split_once(' ').unwrap_or((input.trim_end(), ""));
+    let width = row.trim_end().chars().count();
+    let row0 = row
+        .trim_end()
+        .chars()
+        .enumerate()
+        .filter(|&(_, ch)| ch == '^')
+        .fold(0u128, |acc, (i, _)| acc | (1u128 << i));
+    let needed = needed.trim().parse::<usize>().unwrap_or(0);
+    (row0, width, needed)
 }
 
-use Tile::*;
-
-pub struct State {
-    pub prior_row: Vec<Tile>,
-    pub row_length: usize,
-    pub needed: usize,
-    pub safe_tile_count: u32,
-}
-
-impl State {
-    pub fn parse_input(input: &str) -> Self {
-        let (row, needed) = input.split_once(' ').unwrap();
-        let mut row_length = 0;
-        let mut safe_tile_count = 0;
-        let prior_row: Vec<Tile> = row
-            .chars()
-            .map(|ch| {
-                row_length += 1;
-                match ch {
-                    '.' => {
-                        safe_tile_count += 1;
-                        Tile::Safe
-                    }
-                    '^' => Tile::Trap,
-                    _ => unreachable!("Cannot parse {ch}"),
-                }
-            })
-            .collect();
-        let needed = needed.trim_end().parse::<usize>().unwrap();
-
-        Self {
-            prior_row,
-            safe_tile_count,
-            needed,
-            row_length,
-        }
+/// Count the safe tiles across `needed` rows, starting from `row0`.
+///
+/// Every trap rule reduces to "the left and right neighbours differ", so the
+/// next row is `(row << 1) ^ (row >> 1)` masked to the grid width; the shifts
+/// bring in safe (0) tiles off the edges, which is the desired behaviour.
+fn count_safe(row0: u128, width: usize, needed: usize) -> u32 {
+    if needed == 0 {
+        return 0;
     }
-
-    pub fn set_row_count(&mut self, needed: usize) {
-        self.needed = needed;
+    let mask = (1u128 << width) - 1;
+    let width = width as u32;
+    let mut row = row0;
+    let mut safe_total = width - row.count_ones();
+    for _ in 0..needed - 1 {
+        row = ((row << 1) ^ (row >> 1)) & mask;
+        safe_total += width - row.count_ones();
     }
-
-    pub fn process(&mut self) {
-        (0..self.needed - 1).for_each(|_| {
-            let new_row: Vec<Tile> = (0..self.row_length)
-                .map(|idx| {
-                    let p1 = self
-                        .prior_row
-                        .get(idx.wrapping_sub(1))
-                        .unwrap_or(&Tile::Safe);
-                    let p2 = self.prior_row.get(idx).unwrap_or(&Tile::Safe);
-                    let p3 = self.prior_row.get(idx + 1).unwrap_or(&Tile::Safe);
-
-                    match (p1, p2, p3) {
-                        (Trap, Trap, Safe) => Trap,
-                        (Safe, Trap, Trap) => Trap,
-                        (Trap, Safe, Safe) => Trap,
-                        (Safe, Safe, Trap) => Trap,
-                        _ => {
-                            self.safe_tile_count += 1;
-                            Safe
-                        }
-                    }
-                })
-                .collect();
-            self.prior_row = new_row;
-        })
-    }
-
-    pub fn count_safe(&self) -> Option<u32> {
-        Some(self.safe_tile_count)
-    }
+    safe_total
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut state = State::parse_input(input);
-
-    state.process();
-
-    state.count_safe()
+    let (row0, width, needed) = parse(input);
+    Some(count_safe(row0, width, needed))
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let mut state = State::parse_input(input);
-    state.set_row_count(400_000);
-
-    state.process();
-
-    state.count_safe()
+    let (row0, width, _) = parse(input);
+    Some(count_safe(row0, width, 400_000))
 }
 
 #[cfg(test)]
@@ -106,10 +55,4 @@ mod tests {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(38));
     }
-
-    // #[test]
-    // fn test_part_two() {
-    //     let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-    //     assert_eq!(result, None);
-    // }
 }
