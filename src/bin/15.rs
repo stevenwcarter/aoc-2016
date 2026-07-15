@@ -1,7 +1,5 @@
 advent_of_code::solution!(15);
 
-use rayon::prelude::*;
-
 use nom::{
     IResult,
     bytes::complete::tag,
@@ -47,19 +45,24 @@ fn parse_all_disks(input: &str) -> IResult<&str, Vec<(u32, u32)>> {
     nom::multi::many1(parse_disk)(input)
 }
 
-fn test_disks(start_position: u32, disks: &[Disk]) -> bool {
-    let mut position = start_position + 1;
+fn find_start(disks: &[Disk]) -> u32 {
+    let mut step = 1;
 
-    for disk in disks {
-        if !(disk.zero_position + position).is_multiple_of(disk.position_count) {
-            return false;
-        }
-        position += 1;
-    }
+    disks
+        .iter()
+        .enumerate()
+        .fold(0, |mut acc: u32, (i, disk): (usize, &Disk)| {
+            while (disk.zero_position + acc + (i + 1) as u32) % disk.position_count != 0 {
+                acc += step;
+            }
 
-    true
+            // keep track of how much to shift so we only test valid future solutions, adding the
+            // time for this rotation to come around into the mix
+            step *= disk.position_count;
+
+            acc
+        })
 }
-
 pub fn part_one(input: &str) -> Option<u32> {
     let disks: Vec<Disk> = parse_all_disks(input)
         .unwrap()
@@ -68,7 +71,7 @@ pub fn part_one(input: &str) -> Option<u32> {
         .map(Disk::new)
         .collect();
 
-    (0..600000).find(|start_position| test_disks(*start_position, &disks))
+    Some(find_start(&disks))
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -84,9 +87,7 @@ pub fn part_two(input: &str) -> Option<u32> {
         zero_position: 0,
     });
 
-    (0..6000000)
-        .into_par_iter()
-        .find_first(|start_position| test_disks(*start_position, &disks))
+    Some(find_start(&disks))
 }
 
 #[cfg(test)]
