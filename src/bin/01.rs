@@ -11,6 +11,7 @@ enum Direction {
 }
 
 use Direction::*;
+use hashbrown::HashSet;
 
 impl Direction {
     fn new_direction(c: &str, direction: Self) -> Self {
@@ -58,7 +59,8 @@ pub fn part_one(input: &str) -> Option<u32> {
 
 pub fn part_two(input: &str) -> Option<u32> {
     let mut coord: Coord<i32> = Coord(0, 0);
-    let mut visited: Vec<Coord<i32>> = vec![coord];
+    let mut visited: HashSet<Coord<i32>> = HashSet::new();
+    visited.insert(coord);
     let mut found = false;
 
     let mut current_direction = Direction::North;
@@ -86,7 +88,7 @@ pub fn part_two(input: &str) -> Option<u32> {
                     if visited.contains(&coord) {
                         found = true;
                     } else {
-                        visited.push(coord);
+                        visited.insert(coord);
                     }
                 });
             }
